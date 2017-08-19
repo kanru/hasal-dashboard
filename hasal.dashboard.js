@@ -261,7 +261,8 @@ function attachCanvases(tests) {
 
 function toDate(unix) {
   let d = new Date(unix * 1000);
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
 
 
@@ -305,7 +306,8 @@ function calculateValues(data) {
   lowerWhisker = min;
   upperWhisker = max;
   if (min < (q1 - 1.5 * iqr)) {
-    for (var i = 0; i < q1Pos; i++) {
+    lowerWhisker = q1;
+    for (var i = 0; i <= q1Pos; i++) {
       // we have to detect outliers
       if (data[i] < (q1 - 3 * iqr)) {
         extremeOutliers.push(data[i]);
@@ -318,6 +320,7 @@ function calculateValues(data) {
     }
   }
   if (max > (q3 + (1.5 * iqr))) {
+    upperWhisker = q3;
     for (i = q3Pos; i < data.length; i++) {
       // we have to detect outliers
       if (data[i] > (q3 + 3 * iqr)) {
@@ -343,22 +346,21 @@ function calculateValues(data) {
 function analyzeData(data) {
   let dayData = {};
   for (let p of data) {
-    if (!dayData[p.push_timestamp]) {
-      dayData[p.push_timestamp] = new Array();
+    let t = toDate(p.push_timestamp).valueOf();
+    if (!dayData[t]) {
+      dayData[t] = new Array();
     }
-    dayData[p.push_timestamp].push(p.value);
+    dayData[t].push(p.value);
   }
   let result = new Array();
   for (let day in dayData) {
     if (!dayData.hasOwnProperty(day)) {
       continue;
     }
-    let time = day;
-    let d = dayData[time];
+    let d = dayData[day];
     let { max, q3, med, q1, min } = calculateValues(d);
-    let t = toDate(time);
     result.push({
-      t: t.valueOf(),
+      t: parseInt(day),
       max: max,
       q3: q3,
       med: med,
@@ -369,6 +371,35 @@ function analyzeData(data) {
   return result;
 }
 
+function fillMissingData(data, start, end) {
+  let firstDay = new Date(data[0].t);
+  while (start < firstDay) {
+    firstDay.setDate(firstDay.getDate() - 1);
+    data.unshift({
+      t: firstDay.valueOf(),
+      max: NaN, q3: NaN, med: NaN, q1: NaN, min: NaN
+    });
+  }
+  let lastDay = new Date(data[data.length - 1].t);
+  while (lastDay < end) {
+    lastDay.setDate(lastDay.getDate() + 1);
+    data.push({
+      t: lastDay.valueOf(),
+      max: NaN, q3: NaN, med: NaN, q1: NaN, min: NaN
+    });
+  }
+  let prevDay = new Date(data[0].t);
+  for (let i = 1; i < data.length; ++i) {
+    prevDay.setDate(prevDay.getDate() + 1);
+    if (prevDay.getTime() < data[i].t) {
+      data.splice(i, 0, {
+        t: prevDay.valueOf(),
+        max: NaN, q3: NaN, med: NaN, q1: NaN, min: NaN
+      });
+    }
+  }
+}
+
 function attachCharts(tests, data) {
   for (let t of tests) {
     var elm = document.getElementById(t.test);
@@ -377,10 +408,10 @@ function attachCharts(tests, data) {
     ctx.canvas.height = canvasAspect[1];
     let firefox = analyzeData(data[t.signatures.firefox]);
     let chrome = analyzeData(data[t.signatures.chrome]);
-    // XXX handle missing data points
-    let min = Math.min(firefox.length, chrome.length);
-    firefox.length = min;
-    chrome.length = min;
+    let start = new Date(Math.min(firefox[0].t, chrome[0].t));
+    let end = new Date(Math.max(firefox[firefox.length-1].t, chrome[chrome.length-1].t));
+    fillMissingData(firefox, start, end);
+    fillMissingData(chrome, start, end);
     elm.chart = new Chart(ctx, {
       type: 'BoxWhisker',
       data: {
