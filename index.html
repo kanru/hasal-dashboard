@@ -6,20 +6,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js"></script>
     <script src="Chart.BoxWhisker.min.js"></script>
+    <link href='style.css' rel='stylesheet' type='text/css'>
   </head>
   <body>
-    <div id="chart-container">
-    </div>
-    <!--
-    <div style="width:100%;">
-      <canvas id="chart1"></canvas>
-    </div>
-    <hr>
-    <div style="width:100%;">
-      <canvas id="chart2"></canvas>
-    </div>
-    <script type="text/javascript" src="index.js"></script>
-    -->
+      <header class="head">
+          <h1>Hasal Dashboard</h1>
+          Data pulled from perfherder and plotted with <a href="http://informationandvisualization.de/blog/box-plot" alt="Box Plot">Box-Whisker</a> chart.
+      </header>
+      <div id="chart-container">
+      </div>
+      <div id="spinner" class="sk-cube-grid">
+          <div class="sk-cube sk-cube1"></div>
+          <div class="sk-cube sk-cube2"></div>
+          <div class="sk-cube sk-cube3"></div>
+          <div class="sk-cube sk-cube4"></div>
+          <div class="sk-cube sk-cube5"></div>
+          <div class="sk-cube sk-cube6"></div>
+          <div class="sk-cube sk-cube7"></div>
+          <div class="sk-cube sk-cube8"></div>
+          <div class="sk-cube sk-cube9"></div>
+      </div>
+      <a href="https://github.com/kanru/hasal-dashboard"><img class="github-ribbon" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png"></a>
     <script type="text/javascript" src="hasal.dashboard.js"></script>
   </body>
 </html>
