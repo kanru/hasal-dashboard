@@ -371,7 +371,8 @@ function analyzeData(data) {
 
 function attachCharts(tests, data) {
   for (let t of tests) {
-    var ctx = document.getElementById(t.test).getContext("2d");
+    var elm = document.getElementById(t.test);
+    var ctx = elm.getContext("2d");
     ctx.canvas.width = canvasAspect[0];
     ctx.canvas.height = canvasAspect[1];
     let firefox = analyzeData(data[t.signatures.firefox]);
@@ -380,7 +381,7 @@ function attachCharts(tests, data) {
     let min = Math.min(firefox.length, chrome.length);
     firefox.length = min;
     chrome.length = min;
-    new Chart(ctx, {
+    elm.chart = new Chart(ctx, {
       type: 'BoxWhisker',
       data: {
         datasets: [{
