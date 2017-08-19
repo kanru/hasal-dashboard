@@ -264,6 +264,80 @@ function toDate(unix) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
+
+function calculateValues(data) {
+  data.sort((a, b) => a - b);
+  let upperWhisker, q3, median, q1, lowerWhisker;
+  var n = data.length;
+  // lower quartile
+  var q1Pos = (n * 0.25);
+  if (q1Pos % 1 != 0) {
+    q1Pos = Math.floor(q1Pos);
+    q1 = data[q1Pos];
+  } else {
+    q1Pos = Math.floor(q1Pos);
+    q1 = (data[q1Pos] + data[q1Pos-1]) / 2;
+  }
+  // median
+  var medianPos = (n * 0.5);
+  if (medianPos % 1 != 0) {
+    medianPos = Math.floor(medianPos);
+    median = data[medianPos];
+  } else {
+    medianPos = Math.floor(medianPos);
+    median = (data[medianPos] + data[medianPos-1]) / 2;
+  }
+  // upper quartile
+  var q3Pos = (n * 0.75);
+  if (q3Pos % 1 != 0) {
+    q3Pos = Math.floor(q3Pos);
+    q3 = data[q3Pos];
+  } else {
+    q3Pos = Math.floor(q3Pos);
+    q3 = (data[q3Pos] + data[q3Pos-1]) / 2;
+  }
+  let min = data[0];
+  let max = data[n - 1];
+
+  var iqr = q3 - q1;
+  let mildOutliers = new Array();
+  let extremeOutliers = new Array();
+  lowerWhisker = min;
+  upperWhisker = max;
+  if (min < (q1 - 1.5 * iqr)) {
+    for (var i = 0; i < q1Pos; i++) {
+      // we have to detect outliers
+      if (data[i] < (q1 - 3 * iqr)) {
+        extremeOutliers.push(data[i]);
+      } else if (data[i] < (q1 - 1.5 * iqr)) {
+        mildOutliers.push(data[i]);
+      } else if (data[i] >= (q1 - 1.5 * iqr)) {
+        lowerWhisker = data [i];
+        break;
+      }
+    }
+  }
+  if (max > (q3 + (1.5 * iqr))) {
+    for (i = q3Pos; i < data.length; i++) {
+      // we have to detect outliers
+      if (data[i] > (q3 + 3 * iqr)) {
+        extremeOutliers.push(data[i]);
+      } else if (data[i] > (q3 + 1.5 * iqr)) {
+        mildOutliers.push(data[i]);
+      } else if (data[i] <= (q3 + 1.5 * iqr)) {
+        upperWhisker = data[i];
+      }
+    }
+  }
+  return {
+    max: upperWhisker,
+    q3: q3,
+    med: median,
+    q1: q1,
+    min: lowerWhisker
+  };
+}
+
 // Group input data by push_timestamp and
 // calculate max, q3, med, q1, min
 function analyzeData(data) {
@@ -281,12 +355,7 @@ function analyzeData(data) {
     }
     let time = day;
     let d = dayData[time];
-    d.sort((a, b) => a - b);
-    let max = d[d.length - 1];
-    let min = d[0];
-    let med = d[Math.floor(d.length * 0.5)];
-    let q3 = d[Math.floor(d.length * 0.75)];
-    let q1 = d[Math.floor(d.length * 0.25)];
+    let { max, q3, med, q1, min } = calculateValues(d);
     let t = toDate(time);
     result.push({
       t: t.valueOf(),
@@ -315,27 +384,31 @@ function attachCharts(tests, data) {
       type: 'BoxWhisker',
       data: {
         datasets: [{
-	  label: "Firefox",
-	  data: firefox,
-	  backgroundColor: firefoxColor
+          label: "Firefox",
+          data: firefox,
+          backgroundColor: firefoxColor
         }, {
-	  label: "Chrome",
-	  data: chrome,
-	  backgroundColor: chromeColor
+          label: "Chrome",
+          data: chrome,
+          backgroundColor: chromeColor
         }]
       },
       options: {
         title: {
-	  display: true,
-	  position: 'bottom',
-	  text: t.name
+          display: true,
+          position: 'bottom',
+          text: t.name
         },
         legend: {
-	  position: 'left'
+          position: 'left'
         }
       }
     });
   }
+}
+
+function hideSpinner() {
+  document.getElementById("spinner").remove();
 }
 
 async function start() {
@@ -345,6 +418,7 @@ async function start() {
   let data = await getSeriesData(signatures);
   attachCanvases(filteredTests);
   attachCharts(filteredTests, data);
+  hideSpinner();
 }
 
 start();
