@@ -1,7 +1,7 @@
 /*global Chart, moment */
 
 /* global variables */
-var interval = 5184000; // 60 days
+var interval = 6912000; // 80 days
 var platform = "mozilla-central";
 var framework_id = 9; // hasal
 var root_id = "chart-container";
