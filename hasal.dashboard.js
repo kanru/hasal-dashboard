@@ -372,32 +372,23 @@ function analyzeData(data) {
 }
 
 function fillMissingData(data, start, end) {
-  let firstDay = new Date(data[0].t);
-  while (start < firstDay) {
-    firstDay.setDate(firstDay.getDate() - 1);
-    data.unshift({
-      t: firstDay.valueOf(),
-      max: NaN, q3: NaN, med: NaN, q1: NaN, min: NaN
-    });
-  }
-  let lastDay = new Date(data[data.length - 1].t);
-  while (lastDay < end) {
-    lastDay.setDate(lastDay.getDate() + 1);
-    data.push({
-      t: lastDay.valueOf(),
-      max: NaN, q3: NaN, med: NaN, q1: NaN, min: NaN
-    });
-  }
-  let prevDay = new Date(data[0].t);
-  for (let i = 1; i < data.length; ++i) {
-    prevDay.setDate(prevDay.getDate() + 1);
-    if (prevDay.getTime() < data[i].t) {
-      data.splice(i, 0, {
-        t: prevDay.valueOf(),
-        max: NaN, q3: NaN, med: NaN, q1: NaN, min: NaN
+  let out = new Array();
+  let cur = new Date(start);
+  let i = 0;
+  while (cur <= end) {
+    if (data[i] && data[i].t == cur.valueOf()) {
+      out.push(data[i]);
+      i += 1;
+    } else {
+      out.push({
+        t: cur.valueOf(),
+        max: 0, q3: 0, med: 0, q1: 0, min: 0,
+        dummy: true
       });
     }
+    cur.setDate(cur.getDate() + 1);
   }
+  return out;
 }
 
 function attachCharts(tests, data) {
@@ -410,8 +401,8 @@ function attachCharts(tests, data) {
     let chrome = analyzeData(data[t.signatures.chrome]);
     let start = new Date(Math.min(firefox[0].t, chrome[0].t));
     let end = new Date(Math.max(firefox[firefox.length-1].t, chrome[chrome.length-1].t));
-    fillMissingData(firefox, start, end);
-    fillMissingData(chrome, start, end);
+    firefox = fillMissingData(firefox, start, end);
+    chrome = fillMissingData(chrome, start, end);
     elm.chart = new Chart(ctx, {
       type: 'BoxWhisker',
       data: {
