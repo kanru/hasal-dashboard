@@ -424,6 +424,38 @@ function attachCharts(tests, data) {
         },
         legend: {
           position: 'left'
+        },
+        annotation: {
+          annotations: [
+            {
+              type: "line",
+              mode: "vertical",
+              scaleID: "x-axis-0",
+              value: 'Oct 5, 2017',
+              borderColor: "red",
+              borderWidth: 2,
+              label: {
+                position: "top",
+                backgroundColor: "red",
+                content: "Oct 5, Machines change to HP",
+                enabled: true
+              }
+            },
+            {
+              type: "line",
+              mode: "vertical",
+              scaleID: "x-axis-0",
+              value: 'Nov 14, 2017',
+              borderColor: "green",
+              borderWidth: 2,
+              label: {
+                position: "top",
+                backgroundColor: "green",
+                content: "Nov 14, Enable Retained Display List",
+                enabled: true
+              }
+            }
+          ]
         }
       }
     });
